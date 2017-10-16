@@ -24,5 +24,9 @@ public class ApiRequestMethods {
     }
 
 
+    public <T> T create(Class<T> tClass){
+        Object obj = new Object();
+        return (T)obj;
+    }
 
 }

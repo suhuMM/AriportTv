@@ -141,6 +141,11 @@ public class TouchImageView extends AppCompatImageView {
     Matrix matrix1 = new Matrix();
     Matrix savedMatrix = new Matrix();
 
+    /**
+     *基础的矩阵
+    */
+    private Matrix basicsMatrix = new Matrix();
+
     private static final int NONE = 0;
     private static final int DRAG = 1;
     private static final int ZOOM = 2;
@@ -174,7 +179,6 @@ public class TouchImageView extends AppCompatImageView {
 
 
     private void init() {
-        matrix = new Matrix();
         paint = new Paint();
         paint.setColor(Color.RED);
 
@@ -193,19 +197,32 @@ public class TouchImageView extends AppCompatImageView {
             //按照宽边进行放缩
             if (scaleW > scaleH) {
                 basis_scale = 1/scaleW;
-                matrix.postScale(basis_scale, basis_scale);
-                matrix.postTranslate(0,(heightScreen-height/scaleW)/2);
+                matrix.postTranslate(0,(heightScreen-height*basis_scale)/2);
             } else {
                 basis_scale = 1/scaleH;
-                matrix.postScale(basis_scale, basis_scale);
                 //平移指的是将坐标原点平移
-                matrix.postTranslate((widthScreen-width/scaleH)/2,0);
+                matrix.postTranslate((widthScreen-width*basis_scale)/2,0);
             }
-
+        }else {
+            float scaleW = widthScreen*1.0f/(width*1.0f);
+            float scaleH = heightScreen*1.0f/(height*1.0f);
+            if (scaleW<scaleH){
+                basis_scale = scaleW;
+                matrix.postTranslate(0,(heightScreen-height*basis_scale)/2);
+            }else {
+                basis_scale = scaleH;
+                matrix.postTranslate((widthScreen-width*basis_scale)/2,0);
+            }
         }
+
+
         //获得变化后宽高
         scalingW = width*basis_scale;
         scalingH = height*basis_scale;
+
+        //缩放图片大小，得到新图片
+        basicsMatrix.postScale(basis_scale,basis_scale);
+        gintama = Bitmap.createBitmap(gintama,0,0,width,height,basicsMatrix,true);
 
         //获得比例
         measureRatio(point_x,point_Y,scalingW,scalingH);
@@ -424,13 +441,13 @@ public class TouchImageView extends AppCompatImageView {
      *@time 2017/8/3 14:27
      *@param point_x ：x轴坐标点
      *@param point_y ：y轴坐标点
-     *@param width ：图像宽度
-     *@param height ：图像高度
+     *@param widthW ：图像宽度
+     *@param heightH ：图像高度
      *
     */
-    private void measureRatio(Latitude point_x,Latitude point_y,float width,float height){
-        ratioX = width/(point_x.x-point_y.x);
-        ratioY = height/(point_y.y-point_x.y);
+    private void measureRatio(Latitude point_x,Latitude point_y,float widthW,float heightH){
+        ratioX = widthW/(point_x.x-point_y.x);
+        ratioY = heightH/(point_y.y-point_x.y);
     }
 
     /**
@@ -492,7 +509,8 @@ public class TouchImageView extends AppCompatImageView {
      *
     */
     public void drawPoint(List<Latitude> pointList){
-        Bitmap bm = Bitmap.createBitmap(width,height,Config.ARGB_8888);
+        //Bitmap bm = Bitmap.createBitmap(width,height,Config.ARGB_8888);
+        Bitmap bm = Bitmap.createBitmap(gintama.getWidth(),gintama.getHeight(),Config.ARGB_8888);
         Canvas canvas = new Canvas(bm);
         canvas.drawBitmap(gintama,0,0,null);
         List<Latitude> list = transformationList(pointList);
@@ -503,6 +521,7 @@ public class TouchImageView extends AppCompatImageView {
         bitmap = bm;
         //通知
         invalidate();
+
     }
 
     

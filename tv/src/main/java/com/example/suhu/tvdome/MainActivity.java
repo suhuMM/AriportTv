@@ -24,6 +24,8 @@ public class MainActivity extends Activity {
         imageView = new TouchImageView(this);
         setContentView(imageView);
 
+//        setContentView(R.layout.activity_main);
+//        imageView = findViewById(R.id.image);
         imageView.setFocusable(true);
         bindServices();
     }
