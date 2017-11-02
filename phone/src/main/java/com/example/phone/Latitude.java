@@ -7,6 +7,7 @@ package com.example.phone;
 public final class Latitude {
     public double x;
     public double y;
+    public int typ;
 
     public Latitude(){}
 
@@ -15,4 +16,9 @@ public final class Latitude {
         this.y = y;
     }
 
+    public Latitude(double x, double y, int typ) {
+        this.x = x;
+        this.y = y;
+        this.typ = typ;
+    }
 }

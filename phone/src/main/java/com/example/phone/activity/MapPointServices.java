@@ -1,8 +1,7 @@
-package com.example.phone.server;
+package com.example.phone.activity;
 
 import android.app.Service;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -10,11 +9,9 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 
 import com.example.phone.Latitude;
-import com.example.phone.TouchImageView;
 import com.example.phone.http.ApiRequestFactory;
 import com.example.phone.http.ApiRequestMethods;
 import com.example.phone.http.ApiUrl;
-import com.example.phone.module.Information;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -29,11 +26,12 @@ import okhttp3.Call;
  * @description
  */
 
-public class MapPointServices extends Service{
-    private TouchImageView imageView;
+public class MapPointServices extends Service {
+    private AirPortMapView imageView;
     private Information info;
     private boolean tag = true;
     private Handler handler;
+    private MapMessageAdapter adapter;
 
 
     @Nullable
@@ -44,20 +42,20 @@ public class MapPointServices extends Service{
     }
 
     @Override
-    public void unbindService(ServiceConnection conn) {
-        super.unbindService(conn);
+    public boolean onUnbind(Intent intent) {
         tag = false;
+        return super.onUnbind(intent);
     }
 
     @Override
-    public int onStartCommand(Intent intent,  int flags, int startId) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         return START_STICKY;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        handler = new Handler(){
+        handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 getInfoList();
@@ -82,31 +80,34 @@ public class MapPointServices extends Service{
                 }
             }
         }).start();
+
     }
 
-    private void getInfoList(){
-        ApiRequestMethods.getInfoList(this, ApiUrl.LIST, 0, new ApiRequestFactory.HttpCallBackListener() {
+    private void getInfoList() {
+        ApiRequestMethods.getInfoList(MapPointServices.this, ApiUrl.LIST,0, new ApiRequestFactory.HttpCallBackListener() {
             @Override
             public void onSuccess(String response, String url, int id) {
+
                 info = new Gson().fromJson(response, Information.class);
 
-                if (info == null){return;}
+                if (info == null) {
+                    return;
+                }
                 List<Information.DataBean> dataList = info.getData();
                 List<Latitude> list = new ArrayList<>();
 
                 for (Information.DataBean dataBean : dataList) {
-                    String LongLatitude = dataBean.getLongitude_latitude();
-                    String[] ss = LongLatitude.split(",");
+                    String longLatitude = dataBean.getLongitudeLatitude();
+                    String[] ss = longLatitude.split(",");
                     try {
                         list.add(new Latitude(Double.parseDouble(ss[0]), Double.parseDouble(ss[1])));
-                    }catch (Exception e){}
+                    } catch (Exception e) {
+                    }
                 }
 
-                list.add(new Latitude(116.584559, 39.785231));
-                list.add(new Latitude(116.570042, 39.792439));
-                list.add(new Latitude(116.546385, 39.77919));
-                list.add(new Latitude(116.636153, 39.802102));
-                imageView.drawPoint(list);
+                if (imageView != null) {
+                    imageView.drawPoint(list);
+                }
 
             }
 
@@ -118,16 +119,19 @@ public class MapPointServices extends Service{
     }
 
 
-    public void setImageView(TouchImageView imageView) {
+    public void setImageView(AirPortMapView imageView) {
         this.imageView = imageView;
     }
 
-    public class SerViceBinder extends Binder{
-        public MapPointServices getService(){
+    public void setAdapter(MapMessageAdapter adapter) {
+        this.adapter = adapter;
+    }
+
+    public class SerViceBinder extends Binder {
+        public MapPointServices getService() {
             return MapPointServices.this;
         }
     }
-
 
 
 }

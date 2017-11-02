@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.1"
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "com.example.suhu.tvdome"
         minSdkVersion 21
@@ -15,6 +15,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    dataBinding {
+        enabled true
     }
 }
 
@@ -30,4 +33,5 @@ dependencies {
     //loading
     compile 'com.github.d-max:spots-dialog:0.7@aar'
     compile 'com.google.code.gson:gson:2.8.2'
+    compile 'com.android.support:design:26.0.0-alpha1'
 }
