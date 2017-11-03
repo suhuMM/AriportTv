@@ -116,26 +116,10 @@ public class ApiRequestFactory {
                             return;
                         }
 
-                        JSONObject object = null;
-                        try {
-                            object = new JSONObject(response).getJSONObject("data");
-                            int flag = object.getInt("flag");
-                            switch (flag){
-                                case -3:
-                                    ToastUtils.disPlayShort(context, "参数为空");
-                                    return;
-                                case -5:
-                                    ToastUtils.disPlayShort(context, "无数据");
-                                    return;
-                                case 0:
-                                    if (!object.has("data")) return;
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+
 
                         if (httpCallBackListener !=null){
-                            httpCallBackListener.onSuccess(object.toString(),url,id);
+                            httpCallBackListener.onSuccess(response,url,id);
                         }
                     }
                 });

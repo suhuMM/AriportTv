@@ -63,7 +63,8 @@ public class MapMessageAdapter extends RecyclerView.Adapter<MapMessageAdapter.Ma
     public void setList(List<ItemMessage> list) {
         this.list = list;
         if (list!=null){
-            notifyItemRangeChanged(0,list.size());
+            //notifyItemRangeChanged(0,list.size());
+            notifyDataSetChanged();
         }
 
     }

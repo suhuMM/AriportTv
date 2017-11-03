@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import com.example.phone.MapFragmentDataBind;
 import com.example.phone.R;
@@ -60,41 +59,11 @@ public class MapActivity extends AppCompatActivity {
 
     private void recyclerViewData() {
         list = new ArrayList<>();
-        list.add(new ItemMessage("消防车1",0));
-        list.add(new ItemMessage("消防车2",2));
-        list.add(new ItemMessage("消防车3",1));
-        list.add(new ItemMessage("消防车4",0));
-        list.add(new ItemMessage("消防车5",0));
-        list.add(new ItemMessage("消防车6",2));
-        list.add(new ItemMessage("消防车7",0));
-        list.add(new ItemMessage("消防车8",1));
-        list.add(new ItemMessage("消防车9",0));
-        list.add(new ItemMessage("消防车10",0));
-
-        list.add(new ItemMessage("装甲车1",0));
-        list.add(new ItemMessage("装甲车2",2));
-        list.add(new ItemMessage("装甲车3",0));
-        list.add(new ItemMessage("装甲车4",3));
-        list.add(new ItemMessage("装甲车5",0));
-        list.add(new ItemMessage("装甲车6",0));
-        list.add(new ItemMessage("装甲车7",1));
-        list.add(new ItemMessage("装甲车8",0));
-        list.add(new ItemMessage("装甲车9",1));
-        list.add(new ItemMessage("装甲车10",1));
-
-
-
-
         dataBind.recyclerView.setLayoutManager(new GridLayoutManager(this, 10));
         dataBind.recyclerView.addItemDecoration(new SpaceItemDecoration(15));
         adapter = new MapMessageAdapter(this, list);
         dataBind.recyclerView.setAdapter(adapter);
-        adapter.setOnItemClickListener(new MapMessageAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                Toast.makeText(MapActivity.this, list.get(position).getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+
 
     }
 

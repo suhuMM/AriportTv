@@ -149,6 +149,10 @@ public class AirPortMapView extends AppCompatImageView {
     private Bitmap gintama, bitmap;
     private boolean isMove = true;
 
+    private double tanA = 0d;
+    private double arcA = 0d;
+
+    private int state =-1;
 
     public AirPortMapView(Context context) {
         super(context);
@@ -222,7 +226,8 @@ public class AirPortMapView extends AppCompatImageView {
 
         //获得比例
         //measureRatio(pointX, pointY, scalingW, scalingH);
-        measureRatio(pointX, pointY,origin,scalingW,scalingH);
+        //measureRatio(pointX, pointY,origin,scalingW,scalingH);
+        measureRatioNew(pointX, pointY,origin,scalingW,scalingH);
 
         bitmap = gintama;
     }
@@ -401,6 +406,42 @@ public class AirPortMapView extends AppCompatImageView {
 
     }
 
+    private void measureRatioNew(Latitude point_x,Latitude point_y,Latitude origin,float widthW,float heightH){
+        double dx = Math.sqrt((point_x.x-origin.x)*(point_x.x-origin.x)+(point_x.y-origin.y)*(point_x.y-origin.y));
+        ratioX = widthW/dx;
+        double dy = Math.sqrt((point_y.x-origin.x)*(point_y.x-origin.x)+(point_y.y-origin.y)*(point_y.y-origin.y));
+        ratioY = heightH/dy;
+        double x = point_x.x-origin.x;
+        double y = point_x.y-origin.y;
+
+        double c = point_y.x-origin.x;
+        double f = point_y.y-origin.y;
+
+        tanA =Math.abs ((point_x.y-origin.y)/(point_x.x-origin.x));
+
+        if (x>0 && y >0){
+            state = 1;
+            arcA = Math.atan(tanA);
+        }
+
+        if (x>0 && y<0){
+            state = 2;
+            arcA = Math.atan(tanA);
+        }
+
+        if (x<0 && y>0){
+            state =3;
+            double g = Math.atan(tanA);
+            arcA = Math.PI/2 - g;
+        }
+
+        if (x<0 && y<0){
+            state = 4;
+            double g = Math.atan(tanA);
+            arcA = Math.PI/2 - g;
+        }
+    }
+
 
     /**
      * @param oldPoint ：要转换的点
@@ -415,6 +456,36 @@ public class AirPortMapView extends AppCompatImageView {
         return newPoint;
     }
 
+    private Latitude transformation(Latitude oldPoint){
+        Latitude newPoint = new Latitude();
+        double l =Math.abs(oldPoint.x - origin.x) ;
+        double h =Math.abs(oldPoint.y - origin.y) ;
+
+        switch (state){
+            case 1:
+                newPoint.x =Math.abs(((h-l*(tanA))*Math.sin(arcA)+l*Math.cos(arcA))*ratioX) ;
+                newPoint.y = Math.abs((h-l*(tanA))*Math.cos(arcA)*ratioY);
+                break;
+            case 2:
+
+                newPoint.x = Math.abs((l-h*tanA)*Math.cos(arcA)*ratioX);
+                newPoint.y =Math.abs((h/(Math.cos(arcA))+(l-h*tanA)*(Math.sin(arcA)))*ratioY);
+                break;
+            case 3:
+                newPoint.x = Math.abs((h/(Math.cos(arcA))+(l-h*tanA)*Math.sin(arcA))*ratioX);
+                newPoint.y = Math.abs((l-h*tanA)*Math.cos(arcA)*ratioY);
+
+                break;
+            case 4:
+                newPoint.x = Math.abs((h-l*tanA)*Math.cos(arcA)*ratioX);
+                newPoint.y = Math.abs((l/(Math.cos(arcA))+(h-l*tanA)*Math.sin(arcA))*ratioY);
+
+                break;
+                default:
+        }
+
+        return newPoint;
+    }
 
     /**
      * @param list
@@ -425,7 +496,8 @@ public class AirPortMapView extends AppCompatImageView {
     private List<Latitude> transformationList(List<Latitude> list) {
         List<Latitude> newList = new ArrayList<>();
         for (Latitude point : list) {
-            newList.add(coordinateTransformation(point));
+            //newList.add(coordinateTransformation(point));
+            newList.add(transformation(point));
         }
         return newList;
     }
@@ -459,13 +531,13 @@ public class AirPortMapView extends AppCompatImageView {
         Bitmap bm = Bitmap.createBitmap(gintama.getWidth(), gintama.getHeight(), Config.ARGB_8888);
         Canvas canvas = new Canvas(bm);
         canvas.drawBitmap(gintama, 0, 0, null);
-        List<Latitude> list = transformationList(pointList);
-        for (Latitude latitude : list) {
-            canvas.drawCircle((float) latitude.x, (float) latitude.y, RADIUS, paint);
-            String text = "消防车";
-            float textSize = paint.measureText(text);
-            canvas.drawText(text, (float) latitude.x - textSize / 2, (float) latitude.y - 2 * RADIUS, paint);
+        if (pointList.size()>0){
+            List<Latitude> list = transformationList(pointList);
+            for (Latitude latitude : list) {
+                canvas.drawCircle((float) latitude.x, (float) latitude.y, RADIUS, paint);
+            }
         }
+
         canvas.save();
         bitmap = bm;
         //通知重绘
