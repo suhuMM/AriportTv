@@ -20,8 +20,10 @@ public class ZoomImageView extends AppCompatImageView implements ScaleGestureDet
     private static final String TAG = ZoomImageView.class.getSimpleName();
     public static final float SCALE_MAX = 4.0f;
 
-    //初始化时的缩放比例，如果图片宽或高大于屏幕，此值将小于0；
-    private float initeScale = 1.0f;
+    /**
+     *初始化时的缩放比例，如果图片宽或高大于屏幕，此值将小于0；
+    */
+    private float initScale = 1.0f;
 
     //用于存放矩阵的9个值
     private final float[] matrixValues = new float[9];
@@ -103,15 +105,17 @@ public class ZoomImageView extends AppCompatImageView implements ScaleGestureDet
         float scale = getScale();
         float scaleFactor = detector.getScaleFactor();
 
-        if (getDrawable() == null)
+        if (getDrawable() == null){
             return true;
+
+        }
 
 
         //缩放的范围控制
-        if ((scale < SCALE_MAX && scaleFactor > 1.0f) || (scale > initeScale && scaleFactor < 1.0f)) {
+        if ((scale < SCALE_MAX && scaleFactor > 1.0f) || (scale > initScale && scaleFactor < 1.0f)) {
             //最大值最小值判断
-            if (scaleFactor * scale < initeScale) {
-                scaleFactor = initeScale / scale;
+            if (scaleFactor * scale < initScale) {
+                scaleFactor = initScale / scale;
             }
             if (scaleFactor * scale > SCALE_MAX) {
                 scaleFactor = SCALE_MAX / scale;
@@ -195,6 +199,7 @@ public class ZoomImageView extends AppCompatImageView implements ScaleGestureDet
                 Log.e(TAG, "ACTION_UP");
                 lastPointerCount = 0;
                 break;
+            default:
         }
 
         return true;
@@ -253,8 +258,9 @@ public class ZoomImageView extends AppCompatImageView implements ScaleGestureDet
     public void onGlobalLayout() {
         if (once) {
             Drawable d = getDrawable();
-            if (d == null)
+            if (d == null){
                 return;
+            }
             Log.e(TAG, d.getIntrinsicWidth() + "，" + d.getIntrinsicHeight());
             int width = getWidth();
             int height = getHeight();
@@ -273,7 +279,7 @@ public class ZoomImageView extends AppCompatImageView implements ScaleGestureDet
             if (dw > width && dh > height) {
                 scale = Math.min(dw * 1.0f / width, dh * 1.0f / height);
             }
-            initeScale = scale;
+            initScale = scale;
             //图片移动至屏幕中心
             mScaleMatrix.postTranslate((width - dw) / 2, (height - dh) / 2);
             mScaleMatrix.postScale(scale, scale, getWidth() / 2, getHeight() / 2);

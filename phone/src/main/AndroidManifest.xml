@@ -14,7 +14,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"
+        <activity android:name=".activity.MapActivity"
             android:screenOrientation="landscape"
             >
             <intent-filter>
@@ -24,6 +24,8 @@
             </intent-filter>
         </activity>
         <service android:name=".server.MapPointServices"/>
+        <activity android:name=".MainActivity"/>
+        <service android:name=".activity.MapPointServices"/>
     </application>
 
 </manifest>

@@ -1,7 +1,9 @@
-package com.example.phone;
+package com.example.suhu.tvdome.activity;
 
 /**
- * Created by suhu on 2017/8/2.
+ * @author suhu
+ * @data 2017/10/18.
+ * @description 地图显示展示View
  */
 
 import android.content.Context;
@@ -15,23 +17,32 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.view.MotionEvent;
+
+import com.example.suhu.tvdome.Latitude;
+import com.example.suhu.tvdome.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TouchImageView extends AppCompatImageView {
+public class AirPortMapView extends AppCompatImageView {
 
     /**
      * 小圆的半径
      */
     private static final int RADIUS = 10;
+    private static final int NONE = 0;
+    private static final int DRAG = 1;
+    private static final int ZOOM = 2;
+    /**
+     * 文字大小
+     */
+    private static final int TEXT_SIZE = 30;
 
     /**
      * 基础缩放比例，不能比这个更小
      */
-    private float basis_scale = 1.0f;
+    private float basisScale = 1.0f;
     /**
      * 放缩后图片宽度
      */
@@ -40,17 +51,14 @@ public class TouchImageView extends AppCompatImageView {
      * 放缩后图片高度
      */
     private float scalingH;
-
     /**
      * 经度与宽度比例
      */
     private double ratioX;
-
     /**
      * 纬度与高度比例
      */
     private double ratioY;
-
     /**
      * 亦庄图
      * 116.507807,39.814279
@@ -59,7 +67,6 @@ public class TouchImageView extends AppCompatImageView {
      * 116.57792,39.796808
      */
     private Latitude origin = new Latitude(116.507807, 39.814279);
-
     /**
      * 亦庄图
      * 116.671515,39.814168
@@ -67,8 +74,7 @@ public class TouchImageView extends AppCompatImageView {
      * 云狐图
      * 116.588206,39.796794
      */
-    private Latitude point_x = new Latitude(116.671515, 39.814168);
-
+    private Latitude pointX = new Latitude(116.671515, 39.814168);
     /**
      * 亦庄图
      * 116.508095,39.749625
@@ -76,8 +82,7 @@ public class TouchImageView extends AppCompatImageView {
      * 云狐图
      * 116.577947,39.792678
      */
-    private Latitude point_Y = new Latitude(116.508095, 39.749625);
-
+    private Latitude pointY = new Latitude(116.508095, 39.749625);
     /**
      * 亦庄图
      * 锋创科技园坐标
@@ -101,26 +106,20 @@ public class TouchImageView extends AppCompatImageView {
      * 116.583072,39.796032
      */
     private Latitude test = new Latitude(116.584559, 39.785231);
-
-
     /**
      * 背景图片的宽度
      */
     private int width;
-
     /**
      * 背景图片的高度
      */
     private int height;
-
     /**
      * 画笔
      */
     private Paint paint;
-
-
-    private float x_down = 0;
-    private float y_down = 0;
+    private float xDown = 0;
+    private float yDown = 0;
     private PointF start = new PointF();
     private PointF mid = new PointF();
     private float oldDist = 1f;
@@ -128,34 +127,30 @@ public class TouchImageView extends AppCompatImageView {
     private Matrix matrix = new Matrix();
     private Matrix matrix1 = new Matrix();
     private Matrix savedMatrix = new Matrix();
-
     /**
-     *基础的矩阵
+     * 基础的矩阵
      */
     private Matrix basicsMatrix = new Matrix();
-
-    private static final int NONE = 0;
-    private static final int DRAG = 1;
-    private static final int ZOOM = 2;
     private int mode = NONE;
     private boolean matrixCheck = false;
     private int widthScreen;
     private int heightScreen;
 
     private Bitmap gintama, bitmap;
+    private boolean isMove = true;
 
 
-    public TouchImageView(Context context) {
+    public AirPortMapView(Context context) {
         super(context);
         init();
     }
 
-    public TouchImageView(Context context, AttributeSet attrs) {
+    public AirPortMapView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public TouchImageView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public AirPortMapView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
@@ -164,55 +159,73 @@ public class TouchImageView extends AppCompatImageView {
     private void init() {
         paint = new Paint();
         paint.setColor(Color.RED);
+        paint.setAntiAlias(true);
+        paint.setDither(true);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextSize(TEXT_SIZE);
 
         gintama = BitmapFactory.decodeResource(getResources(), R.mipmap.yizhuang);
-        DisplayMetrics display = getResources().getDisplayMetrics();
-        widthScreen = display.widthPixels;
-        heightScreen = display.heightPixels;
+
+    }
+
+
+    private void initView() {
+        widthScreen = getWidth();
+        heightScreen = getHeight();
 
         width = gintama.getWidth();
         height = gintama.getHeight();
 
         if (width > widthScreen || height > heightScreen) {
             float scaleW = width * 1.0f / widthScreen;
-            float scaleH = height * 1.0f /heightScreen;
+            float scaleH = height * 1.0f / heightScreen;
 
             //按照宽边进行放缩
             if (scaleW > scaleH) {
-                basis_scale = 1/scaleW;
-                matrix.postTranslate(0,(heightScreen-height*basis_scale)/2);
+                basisScale = 1 / scaleW;
+                matrix.postTranslate(0, (heightScreen - height * basisScale) / 2);
             } else {
-                basis_scale = 1/scaleH;
+                basisScale = 1 / scaleH;
                 //平移指的是将坐标原点平移
-                matrix.postTranslate((widthScreen-width*basis_scale)/2,0);
+                matrix.postTranslate((widthScreen - width * basisScale) / 2, 0);
             }
-        }else {
-            float scaleW = widthScreen*1.0f/(width*1.0f);
-            float scaleH = heightScreen*1.0f/(height*1.0f);
-            if (scaleW<scaleH){
-                basis_scale = scaleW;
-                matrix.postTranslate(0,(heightScreen-height*basis_scale)/2);
-            }else {
-                basis_scale = scaleH;
-                matrix.postTranslate((widthScreen-width*basis_scale)/2,0);
+        } else {
+            float scaleW = widthScreen * 1.0f / (width * 1.0f);
+            float scaleH = heightScreen * 1.0f / (height * 1.0f);
+            if (scaleW < scaleH) {
+                basisScale = scaleW;
+                matrix.postTranslate(0, (heightScreen - height * basisScale) / 2);
+            } else {
+                basisScale = scaleH;
+                matrix.postTranslate((widthScreen - width * basisScale) / 2, 0);
             }
         }
 
 
         //获得变化后宽高
-        scalingW = width*basis_scale;
-        scalingH = height*basis_scale;
+        scalingW = width * basisScale;
+        scalingH = height * basisScale;
 
         //缩放图片大小，得到新图片
-        basicsMatrix.postScale(basis_scale,basis_scale);
-        gintama = Bitmap.createBitmap(gintama,0,0,width,height,basicsMatrix,true);
+        basicsMatrix.postScale(basisScale, basisScale);
+        gintama = Bitmap.createBitmap(gintama, 0, 0, width, height, basicsMatrix, true);
 
         //获得比例
-        measureRatio(point_x,point_Y,scalingW,scalingH);
+        measureRatio(pointX, pointY, scalingW, scalingH);
         bitmap = gintama;
-
     }
 
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        if (isMove){
+            initView();
+            isMove = false;
+        }
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
         canvas.save();
         canvas.drawBitmap(bitmap, matrix, null);
@@ -226,12 +239,13 @@ public class TouchImageView extends AppCompatImageView {
      * @author suhu
      * @time 2017/10/12 13:27
      */
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
                 mode = DRAG;
-                x_down = event.getX();
-                y_down = event.getY();
+                xDown = event.getX();
+                yDown = event.getY();
                 savedMatrix.set(matrix);
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
@@ -256,8 +270,8 @@ public class TouchImageView extends AppCompatImageView {
                     }
                 } else if (mode == DRAG) {
                     matrix1.set(savedMatrix);
-                    matrix1.postTranslate(event.getX() - x_down, event.getY()
-                            - y_down);// 平移
+                    matrix1.postTranslate(event.getX() - xDown, event.getY()
+                            - yDown);// 平移
                     matrixCheck = matrixCheck();
                     if (matrixCheck == false) {
                         matrix.set(matrix1);
@@ -347,25 +361,25 @@ public class TouchImageView extends AppCompatImageView {
      * @time 2017/10/12 13:25
      */
     private float rotation(MotionEvent event) {
-        double delta_x = (event.getX(0) - event.getX(1));
-        double delta_y = (event.getY(0) - event.getY(1));
-        double radians = Math.atan2(delta_y, delta_x);
+        double deltaX = (event.getX(0) - event.getX(1));
+        double deltaY = (event.getY(0) - event.getY(1));
+        double radians = Math.atan2(deltaY, deltaX);
         return (float) Math.toDegrees(radians);
     }
 
 
     /**
-     * @param point_x ：x轴坐标点
-     * @param point_y ：y轴坐标点
+     * @param pointX ：x轴坐标点
+     * @param pointY ：y轴坐标点
      * @param width   ：图像宽度
      * @param height  ：图像高度
      * @method 获得XY比例
      * @author suhu
      * @time 2017/8/3 14:27
      */
-    private void measureRatio(Latitude point_x, Latitude point_y, float width, float height) {
-        ratioX = width / (point_x.x - point_y.x);
-        ratioY = height / (point_y.y - point_x.y);
+    private void measureRatio(Latitude pointX, Latitude pointY, float width, float height) {
+        ratioX = width / (pointX.x - pointY.x);
+        ratioY = height / (pointY.y - pointX.y);
     }
 
     /**
@@ -422,14 +436,15 @@ public class TouchImageView extends AppCompatImageView {
      * @time 2017/8/4 11:20
      */
     public void drawPoint(List<Latitude> pointList) {
-        Bitmap bm = Bitmap.createBitmap(gintama.getWidth(),gintama.getHeight(),Config.ARGB_8888);
-        //Bitmap mm = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher);
+        Bitmap bm = Bitmap.createBitmap(gintama.getWidth(), gintama.getHeight(), Config.ARGB_8888);
         Canvas canvas = new Canvas(bm);
         canvas.drawBitmap(gintama, 0, 0, null);
         List<Latitude> list = transformationList(pointList);
         for (Latitude latitude : list) {
             canvas.drawCircle((float) latitude.x, (float) latitude.y, RADIUS, paint);
-            //canvas.drawBitmap(mm,(float) latitude.x, (float) latitude.y,paint);
+            String text = "消防车";
+            float textSize = paint.measureText(text);
+            canvas.drawText(text, (float) latitude.x - textSize / 2, (float) latitude.y - 2 * RADIUS, paint);
         }
         canvas.save();
         bitmap = bm;
