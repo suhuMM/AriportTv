@@ -147,7 +147,8 @@ public class MapPointServices extends Service {
                     if (list.size()==0){
                         ToastUtils.disPlayShort(MapPointServices.this, "无可用数据");
                     }
-                    imageView.drawPoint(list);
+                    setTest();
+                    //imageView.drawPoint(list);
                 }
                 if (adapter!=null){
                     adapter.setList(itemList);
@@ -177,6 +178,37 @@ public class MapPointServices extends Service {
         }
     }
 
+    private void setTest(){
+        List<Latitude> latitudes = new ArrayList<>();
+        //B
+        latitudes.add(new Latitude(116.124648,37.500543));
+        //M
+        latitudes.add(new Latitude(116.107680,37.480831));
+        //N
+        latitudes.add(new Latitude(116.107058,37.480695));
+        //J
+        latitudes.add(new Latitude(116.111086,37.481456));
+        //K
+        latitudes.add(new Latitude(116.109463,37.482501));
+        //D
+        latitudes.add(new Latitude(116.126493,37.501876));
+        //E
+        latitudes.add(new Latitude(116.125886,37.502158));
+        //A
+        latitudes.add(new Latitude(116.109060,37.482765));
+        //C
+        latitudes.add(new Latitude(116.107071,37.48063));
+        //F
+        latitudes.add(new Latitude(116.126521,37.498979));
+        //H
+        latitudes.add(new Latitude(116.118393,37.490060));
+        //I
+        latitudes.add(new Latitude(116.117028,37.491093));
+        //下方
+        latitudes.add(new Latitude(116.124456,37.495076));
 
+
+        imageView.drawPoint(latitudes);
+    }
 
 }

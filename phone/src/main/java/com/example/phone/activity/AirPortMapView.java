@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.RectF;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -37,7 +38,7 @@ public class AirPortMapView extends AppCompatImageView {
     /**
      * 文字大小
      */
-    private static final int TEXT_SIZE = 30;
+    private static final int TEXT_SIZE = 20;
 
     /**
      * 基础缩放比例，不能比这个更小
@@ -128,6 +129,7 @@ public class AirPortMapView extends AppCompatImageView {
      * 画笔
      */
     private Paint paint;
+    private Paint textPaint;
     private float xDown = 0;
     private float yDown = 0;
     private PointF start = new PointF();
@@ -152,7 +154,19 @@ public class AirPortMapView extends AppCompatImageView {
     private double tanA = 0d;
     private double arcA = 0d;
 
+    private double ratioJ = 0d;
+
     private int state =-1;
+
+
+    private int strokeWidth;    // 边框线宽
+    private int strokeColor;    // 边框颜色
+    private int cornerRadius;   // 圆角半径
+
+
+    private RectF textRectF;
+
+
 
     public AirPortMapView(Context context) {
         super(context);
@@ -178,8 +192,19 @@ public class AirPortMapView extends AppCompatImageView {
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(TEXT_SIZE);
 
-        gintama = BitmapFactory.decodeResource(getResources(), R.mipmap.yunhu_new);
+        textPaint = new Paint();
+        textPaint.setColor(Color.BLACK);
+        textPaint.setAntiAlias(true);
+        textPaint.setDither(true);
+        textPaint.setStyle(Paint.Style.STROKE);
+        textPaint.setTextSize(25);
 
+        gintama = BitmapFactory.decodeResource(getResources(), R.mipmap.ariport_3390);
+
+        textRectF = new RectF();
+        strokeWidth = 1;
+        strokeColor = Color.RED;
+        cornerRadius = 5;
     }
 
 
@@ -227,6 +252,7 @@ public class AirPortMapView extends AppCompatImageView {
         //获得比例
         //measureRatio(pointX, pointY, scalingW, scalingH);
         //measureRatio(pointX, pointY,origin,scalingW,scalingH);
+        measure0();
         measureRatioNew(pointX, pointY,origin,scalingW,scalingH);
 
         bitmap = gintama;
@@ -406,6 +432,207 @@ public class AirPortMapView extends AppCompatImageView {
 
     }
 
+    private void measure0(){
+        Latitude pB = new Latitude(116.109029,37.482775);
+        //Latitude pB = new Latitude(116.109060,37.482765);
+        //Latitude pB = new Latitude(116.108998,37.482785);
+        Latitude pD = new Latitude(116.124648,37.500543);
+        double dx = pD.x-pB.x;
+        double dy = pD.y-pB.y;
+        double dkm = 2360d;
+
+        double k = dy/dx;
+        double arcK = Math.atan(k);
+        double dh = dkm*Math.sin(arcK);
+        double ratioH = dy/dh;
+        double dl = dkm*Math.cos(arcK);
+        double ratioL = dx/dl;
+
+        ratioJ = ratioH;
+
+        double dc = Math.sqrt(dx*dx+dy*dy);
+
+        double dBkm = 450+140;
+
+        double ratio = dc/dkm;
+
+        //边界点G点
+        double dBy = dBkm/dkm*dy;
+        double dBx = dBkm/dkm*dx;
+
+        Latitude p1 = new Latitude();
+        p1.x = pB.x-dBx;
+        p1.y = pB.y-dBy;
+
+        //原点坐标
+        double d = 270;
+        double k1 = -1/k;
+        Latitude p2 = new Latitude();
+        p2.x =p1.x- (d*Math.cos(-k1))*ratioL;
+        p2.y =p1.y+(d*Math.sin(-k1))*ratioH;
+
+        //y轴顶点坐标
+        double ddy = 1216-270;
+        Latitude p3 = new Latitude();
+        p3.x = p1.x+(ddy*Math.cos(-k1))*ratioL;
+        p3.y = p1.y-(ddy*Math.sin(-k1))*ratioH;
+
+        //边界值Q点
+        Latitude p4 = new Latitude();
+        double dq = 440;
+        p4.x = pD.x+dq/dkm*dx;
+        p4.y = pD.y+dq/dkm*dy;
+
+        //x轴顶点
+        Latitude p5 = new Latitude();
+        double ddx = 270;
+        double k2 = k1;
+        p5.x = p4.x-(ddx*Math.cos(-k2))*ratioL;
+        p5.y = p4.y+(ddx*Math.sin(-k2))*ratioH;
+
+        origin = p2;
+        pointX = p5;
+        pointY = p3;
+    }
+
+    private void measure1(){
+        Latitude pB = new Latitude(116.109029,37.482775);
+        //Latitude pB = new Latitude(116.109060,37.482765);
+        //Latitude pB = new Latitude(116.108998,37.482785);
+        Latitude pD = new Latitude(116.124648,37.500543);
+        double dx = pD.x-pB.x;
+        double dy = pD.y-pB.y;
+        double dkm = 2412.5d;
+
+        double k = dy/dx;
+        double arcK = Math.atan(k);
+        double dh = dkm*Math.sin(arcK);
+        double ratioH = dy/dh;
+        double dl = dkm*Math.cos(arcK);
+        double ratioL = dx/dl;
+
+        ratioJ = ratioH;
+
+        double dc = Math.sqrt(dx*dx+dy*dy);
+
+        double dBkm = 450+87.5;
+
+        double ratio = dc/dkm;
+
+        //边界点G点
+        double dBy = dBkm/dkm*dy;
+        double dBx = dBkm/dkm*dx;
+
+        Latitude p1 = new Latitude();
+        p1.x = pB.x-dBx;
+        p1.y = pB.y-dBy;
+
+        //原点坐标
+        double d = 270;
+        double k1 = -1/k;
+        Latitude p2 = new Latitude();
+        p2.x =p1.x- (d*Math.cos(-k1))*ratioL;
+        p2.y =p1.y+(d*Math.sin(-k1))*ratioH;
+
+        //y轴顶点坐标
+        double ddy = 1216-270;
+        Latitude p3 = new Latitude();
+        p3.x = p1.x+(ddy*Math.cos(-k1))*ratioL;
+        p3.y = p1.y-(ddy*Math.sin(-k1))*ratioH;
+
+        //边界值Q点
+        Latitude p4 = new Latitude();
+        double dq = 440;
+        p4.x = pD.x+dq/dkm*dx;
+        p4.y = pD.y+dq/dkm*dy;
+
+        //x轴顶点
+        Latitude p5 = new Latitude();
+        double ddx = 270;
+        double k2 = k1;
+        p5.x = p4.x-(ddx*Math.cos(-k2))*ratioL;
+        p5.y = p4.y+(ddx*Math.sin(-k2))*ratioH;
+
+        origin = p2;
+        pointX = p5;
+        pointY = p3;
+    }
+
+
+
+    /**
+     *@method 测量基准点
+     *@author suhu
+     *@time 2017/11/8 16:33
+     *@param
+     *
+    */
+    private void measure(){
+        Latitude pB = new Latitude(116.109029,37.482775);
+        //Latitude pB = new Latitude(116.109060,37.482765);
+        //Latitude pB = new Latitude(116.108998,37.482785);
+        Latitude pD = new Latitude(116.124648,37.500543);
+        double dx = pD.x-pB.x;
+        double dy = pD.y-pB.y;
+        double dkm = 2360d;
+
+        double k = dy/dx;
+        double arcK = Math.atan(k);
+        double aaaa = arcK*180/Math.PI;
+        double dh = dkm*Math.sin(arcK);
+        double ratioH = dy/dh;
+        double dl = dkm*Math.cos(arcK);
+        double ratioL = dx/dl;
+
+        ratioJ = ratioH;
+        double dc = Math.sqrt(dx*dx+dy*dy);
+
+        double dBkm = 450+140;
+
+        double ratio = dc/dkm;
+
+        //边界点G点
+        double dBy = dBkm/dkm*dy;
+        double dBx = dBkm/dkm*dx;
+
+        Latitude p1 = new Latitude();
+        p1.x = pB.x-dBx;
+        p1.y = pB.y-dBy;
+
+        //原点坐标
+        double d = 280;
+        double k1 = -1/k;
+        Latitude p2 = new Latitude();
+        p2.x =p1.x- (d*Math.cos(-k1))*ratioL;
+        p2.y =p1.y+(d*Math.sin(-k1))*ratioH;
+
+        //y轴顶点坐标
+        double ddy = 1132-260-250;
+        Latitude p3 = new Latitude();
+        p3.x = p1.x+(ddy*Math.cos(-k1))*ratioL;
+        p3.y = p1.y-(ddy*Math.sin(-k1))*ratioH;
+
+        //边界值Q点
+        Latitude p4 = new Latitude();
+        double dq = 440;
+        p4.x = pD.x+dq/dkm*dx;
+        p4.y = pD.y+dq/dkm*dy;
+
+        //x轴顶点
+        Latitude p5 = new Latitude();
+        double ddx = 260;
+        double k2 = k1;
+        p5.x = p4.x-(ddx*Math.cos(-k2))*ratioL;
+        p5.y = p4.y+(ddx*Math.sin(-k2))*ratioH;
+
+        origin = p2;
+        pointX = p5;
+        pointY = p3;
+        int a = 11;
+    }
+
+
+
     private void measureRatioNew(Latitude point_x,Latitude point_y,Latitude origin,float widthW,float heightH){
         double dx = Math.sqrt((point_x.x-origin.x)*(point_x.x-origin.x)+(point_x.y-origin.y)*(point_x.y-origin.y));
         ratioX = widthW/dx;
@@ -417,22 +644,23 @@ public class AirPortMapView extends AppCompatImageView {
         double c = point_y.x-origin.x;
         double f = point_y.y-origin.y;
 
+        double h = point_x.y-point_y.y;
+
         tanA =Math.abs ((point_x.y-origin.y)/(point_x.x-origin.x));
 
-        if (x>0 && y >0){
+        if (x>0 && y<0){
             state = 1;
             arcA = Math.atan(tanA);
         }
-
-        if (x>0 && y<0){
+        if (x>0 && y >0){
             state = 2;
             arcA = Math.atan(tanA);
         }
-
         if (x<0 && y>0){
             state =3;
             double g = Math.atan(tanA);
             arcA = Math.PI/2 - g;
+
         }
 
         if (x<0 && y<0){
@@ -458,8 +686,8 @@ public class AirPortMapView extends AppCompatImageView {
 
     private Latitude transformation(Latitude oldPoint){
         Latitude newPoint = new Latitude();
-        double l =Math.abs(oldPoint.x - origin.x) ;
-        double h =Math.abs(oldPoint.y - origin.y) ;
+        double l =oldPoint.x - origin.x ;
+        double h =oldPoint.y - origin.y ;
 
         switch (state){
             case 1:
@@ -468,12 +696,12 @@ public class AirPortMapView extends AppCompatImageView {
                 break;
             case 2:
 
-                newPoint.x = Math.abs((l-h*tanA)*Math.cos(arcA)*ratioX);
-                newPoint.y =Math.abs((h/(Math.cos(arcA))+(l-h*tanA)*(Math.sin(arcA)))*ratioY);
+                newPoint = fun0(oldPoint);
+//                newPoint.x = Math.abs((l-h*tanA)*Math.cos(arcA)*ratioX);
+//                newPoint.y =Math.abs((h/(Math.cos(arcA))+(l-h*tanA)*(Math.sin(arcA)))*ratioY);
                 break;
             case 3:
-                newPoint.x = Math.abs((h/(Math.cos(arcA))+(l-h*tanA)*Math.sin(arcA))*ratioX);
-                newPoint.y = Math.abs((l-h*tanA)*Math.cos(arcA)*ratioY);
+                newPoint = fun0(oldPoint);
 
                 break;
             case 4:
@@ -486,6 +714,169 @@ public class AirPortMapView extends AppCompatImageView {
 
         return newPoint;
     }
+
+    /**
+     *@method 第一种算法
+     *@author suhu
+     *@time 2017/11/7 10:26
+     *@param oldPoint
+     * 1.利用两条直线夹角分别计算出点与新X轴的夹角A，与新Y轴的夹角B
+     * 2.x = r*cos(A)
+     *   y = r*cos(B)
+     *
+     */
+    private Latitude fun0(Latitude oldPoint){
+        Latitude newPoint = new Latitude();
+        double l =Math.abs((oldPoint.x - origin.x)) ;
+        double h =Math.abs((oldPoint.y - origin.y)) ;
+        double d = Math.sqrt((l*l+h*h));
+
+        double kx = (pointX.y-origin.y)/(pointX.x-origin.x);
+        double ky = (pointY.y-origin.y)/(pointY.x-origin.x);
+        double k2 = (oldPoint.y-origin.y)/(oldPoint.x-origin.x);
+        double k3 = Math.abs((kx-k2)/(1+kx*k2));
+        double k4 = Math.abs((ky-k2)/(1+ky*k2));
+
+        double arcH = Math.atan(k3);
+        double arcY = Math.atan(k4);
+
+        newPoint.x =Math.abs(d*Math.cos(arcH))*ratioX;
+        newPoint.y =Math.abs(d*Math.sin(arcH))*ratioY;
+        return newPoint;
+    }
+
+    /**
+     *@method 第一种算法
+     *@author suhu
+     *@time 2017/11/7 10:26
+     *@param oldPoint
+     * 1.利用两条直线夹角分别计算出点与新X轴的夹角A，与新Y轴的夹角B
+     * 2.x = r*cos(A)
+     *   y = r*cos(B)
+     *
+     */
+    private Latitude fun1(Latitude oldPoint){
+        Latitude newPoint = new Latitude();
+
+        double baseX = scalingW/3390;
+        double baseY = scalingH/1216;
+
+        double l =Math.abs((oldPoint.x - origin.x))/ratioJ*baseX ;
+        double h =Math.abs((oldPoint.y - origin.y))/ratioJ*baseY ;
+        double d = Math.sqrt((l*l+h*h));
+
+        double kx = (pointX.y-origin.y)/(pointX.x-origin.x);
+        double ky = (pointY.y-origin.y)/(pointY.x-origin.x);
+        double k2 = (oldPoint.y-origin.y)/(oldPoint.x-origin.x);
+        double k3 = Math.abs((kx-k2)/(1+kx*k2));
+        double k4 = Math.abs((ky-k2)/(1+ky*k2));
+
+        double arcH = Math.atan(k3);
+        double arcY = Math.atan(k4);
+
+        newPoint.x =Math.abs(d*Math.cos(arcH));
+        newPoint.y =Math.abs(d*Math.sin(arcH));
+        return newPoint;
+    }
+
+
+    /**
+     *@method 第二种算法
+     *@author suhu
+     *@time 2017/11/7 10:26
+     *@param oldPoint
+     * 1.算出点与新X轴的夹角A
+     * 2.x = r*cos(A)
+     *   y = r*sin(A)
+     *
+    */
+    private Latitude fun2 (Latitude oldPoint){
+        Latitude newPoint = new Latitude();
+        double l =Math.abs(oldPoint.x - origin.x) ;
+        double h =Math.abs(oldPoint.y - origin.y) ;
+        double d = Math.sqrt((l*l+h*h));
+
+        double tanB = l/h;
+        double arcB = Math.atan(tanB);
+        double arcC = arcB - arcA;
+
+        newPoint.x = Math.abs(d*Math.cos(arcC)*ratioX);
+        newPoint.y = Math.abs(d*Math.sin(arcC)*ratioY);
+        return newPoint;
+    }
+
+
+    /**
+     *@method 第三种算法
+     *@author suhu
+     *@time 2017/11/7 10:23
+     *@param oldPoint
+     * A:坐标系旋转角度
+     * x = x0*cos(A)-y0*sin(A)
+     * y = y0*cos(A)+x0*sin(A)
+     *
+    */
+    private Latitude fun3(Latitude oldPoint){
+        Latitude newPoint = new Latitude();
+        double arcC = Math.atan2(oldPoint.y-origin.y,oldPoint.x-origin.x);
+        newPoint.x =Math.abs(oldPoint.x*Math.cos(arcC)+oldPoint.y*Math.sin(arcC))*ratioX;
+        newPoint.y =Math.abs (oldPoint.y*Math.cos(arcA)+oldPoint.x*Math.sin(arcC))*ratioY;
+        return newPoint;
+    }
+
+    /**
+     *@method 第四种算法
+     *@author suhu
+     *@time 2017/11/7 10:29
+     *@param oldPoint
+     * 利用三角函数计算对应边长
+     *
+    */
+    private Latitude fun4(Latitude oldPoint){
+        Latitude newPoint = new Latitude();
+        double l =Math.abs(oldPoint.x - origin.x) ;
+        double h =Math.abs(oldPoint.y - origin.y) ;
+
+        newPoint.x = Math.abs((l-h*tanA)*Math.cos(arcA)*ratioX);
+        newPoint.y =Math.abs((h/(Math.cos(arcA))+(l-h*tanA)*(Math.sin(arcA)))*ratioY);
+        return newPoint;
+    }
+
+
+    /**
+     *@method 第五种算法
+     *@author suhu
+     *@time 2017/11/7 10:29
+     *@param oldPoint
+     * 直接减，不做任何处理
+     *
+     */
+    private Latitude fun5(Latitude oldPoint){
+        Latitude newPoint = new Latitude();
+        double l =Math.abs(oldPoint.x - origin.x) ;
+        double h =Math.abs(oldPoint.y - origin.y) ;
+        newPoint.x =Math.abs(l*ratioX);
+        newPoint.y = Math.abs(h*ratioY);
+        return newPoint;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * @param list
@@ -535,6 +926,7 @@ public class AirPortMapView extends AppCompatImageView {
             List<Latitude> list = transformationList(pointList);
             for (Latitude latitude : list) {
                 canvas.drawCircle((float) latitude.x, (float) latitude.y, RADIUS, paint);
+                drawText(canvas,"驱鸟员",latitude);
             }
         }
 
@@ -544,5 +936,21 @@ public class AirPortMapView extends AppCompatImageView {
         invalidate();
     }
 
+    private void drawText(Canvas canvas,String text,Latitude latitude){
+
+        float length = paint.measureText(text);
+        float x = (float) latitude.x+10;
+        float y = (float) latitude.y-15;
+
+        textRectF.left = x-5;
+        textRectF.top = y-20;
+        textRectF.right = x+length+5;
+        textRectF.bottom = y+5;
+
+        canvas.drawRoundRect(textRectF, cornerRadius, cornerRadius, textPaint);
+        canvas.drawText(text,x,y,paint);
+
+
+    }
 
 }
