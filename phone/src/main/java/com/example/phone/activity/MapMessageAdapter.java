@@ -40,7 +40,20 @@ public class MapMessageAdapter extends RecyclerView.Adapter<MapMessageAdapter.Ma
     @Override
     public void onBindViewHolder(MapViewHolder holder, int position) {
         holder.textView.setText(list.get(position).getMessage());
-        holder.textView.setBackgroundColor(MapColor.colors[list.get(position).getTyp()]);
+        int typ = list.get(position).getTyp();
+        holder.circle.setVisibility(View.VISIBLE);
+        holder.circle.setText(typ+"");
+        switch (typ){
+            case 0:
+                holder.circle.setBackgroundDrawable(context.getDrawable(R.drawable.circle_blue_bg));
+                break;
+            case 1:
+                holder.circle.setBackgroundDrawable(context.getDrawable(R.drawable.circle_red_bg));
+                break;
+            default:
+                holder.circle.setVisibility(View.GONE);
+                break;
+        }
         addListener(holder);
     }
 
@@ -54,7 +67,7 @@ public class MapMessageAdapter extends RecyclerView.Adapter<MapMessageAdapter.Ma
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    mOnItemClickListener.onItemClick(holder.getLayoutPosition());
+                    mOnItemClickListener.onItemClick(list.get(holder.getLayoutPosition()));
                 }
             });
         }
@@ -73,17 +86,18 @@ public class MapMessageAdapter extends RecyclerView.Adapter<MapMessageAdapter.Ma
         /**
          * 点击回调
          *
-         * @param position
+         * @param itemMessage
          */
-        void onItemClick(int position);
+        void onItemClick(ItemMessage itemMessage);
     }
 
     class MapViewHolder extends RecyclerView.ViewHolder {
-        private TextView textView;
+        private TextView textView,circle;
 
         public MapViewHolder(View itemView) {
             super(itemView);
             textView = (TextView) itemView.findViewById(R.id.map_text);
+            circle = (TextView) itemView.findViewById(R.id.circle);
         }
     }
 

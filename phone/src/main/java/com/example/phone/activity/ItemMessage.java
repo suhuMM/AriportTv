@@ -30,4 +30,12 @@ public class ItemMessage {
     public void setTyp(int typ) {
         this.typ = typ;
     }
+
+    @Override
+    public String toString() {
+        return "ItemMessage{" +
+                "message='" + message + '\'' +
+                ", typ=" + typ +
+                '}';
+    }
 }

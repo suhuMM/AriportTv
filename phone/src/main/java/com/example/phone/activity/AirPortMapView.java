@@ -940,7 +940,7 @@ public class AirPortMapView extends AppCompatImageView {
 
         float length = paint.measureText(text);
         float x = (float) latitude.x+10;
-        float y = (float) latitude.y-15;
+        float y = (float) latitude.y-10;
 
         textRectF.left = x-5;
         textRectF.top = y-20;

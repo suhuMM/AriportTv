@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.example.phone.MapFragmentDataBind;
 import com.example.phone.R;
@@ -63,7 +64,13 @@ public class MapActivity extends AppCompatActivity {
         dataBind.recyclerView.addItemDecoration(new SpaceItemDecoration(15));
         adapter = new MapMessageAdapter(this, list);
         dataBind.recyclerView.setAdapter(adapter);
+        adapter.setOnItemClickListener(new MapMessageAdapter.OnItemClickListener() {
 
+            @Override
+            public void onItemClick(ItemMessage itemMessage) {
+                Toast.makeText(MapActivity.this,""+itemMessage.toString(),Toast.LENGTH_SHORT).show();
+            }
+        });
 
     }
 

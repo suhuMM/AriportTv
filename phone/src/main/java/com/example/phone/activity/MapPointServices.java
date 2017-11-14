@@ -135,7 +135,7 @@ public class MapPointServices extends Service {
                     try {
                         if (Double.parseDouble(ss[0])>0&&Double.parseDouble(ss[1])>0){
                             list.add(new Latitude(Double.parseDouble(ss[0]), Double.parseDouble(ss[1])));
-                            ItemMessage message = new ItemMessage(dataBean.getUuid(),0);
+                            ItemMessage message = new ItemMessage(dataBean.getUuid(),2);
                             itemList.add(message);
                         }
 
@@ -151,6 +151,11 @@ public class MapPointServices extends Service {
                     //imageView.drawPoint(list);
                 }
                 if (adapter!=null){
+                    itemList.add(new ItemMessage("test",0));
+                    itemList.add(new ItemMessage("test",1));
+                    itemList.add(new ItemMessage("test",2));
+                    itemList.add(new ItemMessage("test",0));
+                    itemList.add(new ItemMessage("test",1));
                     adapter.setList(itemList);
                 }
 
